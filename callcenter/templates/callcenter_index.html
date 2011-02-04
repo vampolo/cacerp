@@ -39,6 +39,37 @@
 
 Ext.namespace('cacerp');
 
+cacerp.PagedGrid = Ext.extend(Ext.grid.GridPanel, {
+	
+	sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+	
+	initComponent: function(){
+		Ext.apply(this, {
+			stateful: true,
+			autoScroll: true,
+			remoteSort: true,
+			listeners:{
+				'activate': function(cmp){
+					cmp.store.reload();
+				}
+			},
+			bbar: new Ext.PagingToolbar({
+			    store: this.store,
+			    pageSize:500,
+			    displayInfo:true,
+		    }),
+			view: new Ext.ux.grid.BufferView({
+			    scrollDelay: false,
+				forceFit:true,
+		    })
+		});
+		Ext.applyIf(this,{columns:listcolumns.slice()});
+		cacerp.PagedGrid.superclass.initComponent.apply(this, arguments);
+	}
+});
+
+Ext.reg('pagedgrid', cacerp.PagedGrid);
+
 var listreader = [
 	{name: 'id'},
     {name: 'cognome', allowBlank: true},
@@ -80,6 +111,15 @@ var listcolumns = [
 		        
 var etichette_columns = listcolumns.slice(0,7);
 etichette_columns.push({header: 'Data inserimento', width: 50, sortable:true, dataIndex: 'data'});
+
+var lettere_columns = [
+						{header: 'Data inserimento', width: 50, sortable:true, dataIndex: 'data'},
+						{header: 'Data invio', width: 50, sortable:true, dataIndex: 'data_invio'}
+                    ];
+var lettere_reader = [
+                      {name:'data', allowBlank:false},
+                      {name:'data_invio', allowBlank:false}
+                   ];
 
 
 var persona_fields = 		[{
@@ -417,7 +457,20 @@ function displayPerson(grid, rowIndex, e){
 						width: 350,
         				height: 200,
 						value: values.preventivo,
-					}], 
+					}, new cacerp.PagedGrid({
+						fieldLabel:'Lettere inviate',
+						name:'lettere_inviate',
+						height:300,
+						columns:lettere_columns.slice(),
+						store: new Ext.data.Store({
+						   	reader: new Ext.data.JsonReader({
+								root: 'root',
+					            totalProperty: 'totalCount',
+							}, lettere_reader.slice()),
+						   	autoLoad: {params:{start:0, limit:500}},
+							proxy: new Ext.data.HttpProxy({url: '{% url callcenter %}listLettersSent/'+record.data.id, method: 'GET'})
+						})
+					})], 
 				}),
 
         buttons: [{
@@ -545,33 +598,6 @@ function displayPerson(grid, rowIndex, e){
 			} 
 		});
 	}
-
-cacerp.PagedGrid = Ext.extend(Ext.grid.GridPanel, {
-	initComponent: function(){
-		Ext.apply(this, {
-			stateful: true,
-			autoScroll: true,
-			remoteSort: true,
-			listeners:{
-				'activate': function(cmp){
-					cmp.store.reload();
-				}
-			},
-			bbar: new Ext.PagingToolbar({
-			    store: this.store,
-			    pageSize:500,
-			    displayInfo:true,
-		    }),
-			view: new Ext.ux.grid.BufferView({
-			    scrollDelay: false,
-				forceFit:true,
-		    })
-		});
-		Ext.applyIf(this,{columns:listcolumns.slice()});
-		cacerp.PagedGrid.superclass.initComponent.apply(this, arguments);
-	}
-})
-
 
 
 cacerp.EtichettePanel = Ext.extend(Ext.Panel,{
@@ -908,7 +934,6 @@ Ext.onReady(function() {
 					items:[new cacerp.EtichettePanel()],
 					listeners:{
 						'activate': function(){
-							debugger;
 							this.items.get(0).items.get(0).store.reload();
 						}
 					}

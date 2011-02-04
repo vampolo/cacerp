@@ -8,4 +8,5 @@ urlpatterns = patterns('',
     (r'^generaEtichette$', 'callcenter.views.genEtichette'),
     (r'^sendLetter/?(?P<id>[0-9]+)$', 'callcenter.views.sendLetter'),
     (r'^lettersSent$', 'callcenter.views.lettersSent'),
+    (r'^listLettersSent/?(?P<id>[0-9]+)$', 'callcenter.views.listLettersSent'),
 )

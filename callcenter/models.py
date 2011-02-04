@@ -120,8 +120,7 @@ class Persona(CommonObj, models.Model):
 class Lettera(CommonObj,models.Model):
     persona = models.ForeignKey('Persona')
     data = models.DateField()
-    # 0 for not sent, 1 for sent
-    status = models.BooleanField(default=False)
+    data_invio = models.DateField(default=None, blank=True, null=True)
     
 class Chiamata(models.Model):
     persona = models.ForeignKey('Persona')

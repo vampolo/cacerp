@@ -112,7 +112,7 @@ def Chiamate(request, id):
     return HttpResponse(json2.encode({"totalCount": len(calls),"root": [x.__dict__ for x in calls[start:start+limit]]}))
 
 def LetterePersone(request):
-    p = Lettera.objects.filter(status=False)
+    p = Lettera.objects.filter(data_invio=None)
     
     start = int(request.GET.get('start', 0))
     limit = int(request.GET.get('limit', len(p)))
@@ -129,7 +129,7 @@ def genEtichette(request):
         os.remove(os.path.join(basepath, 'etichette.odt'))
     except OSError:
         pass
-    letters = Lettera.objects.filter(status=False)
+    letters = Lettera.objects.filter(data_invio=None)
     p_list = list(set(x.persona for x in letters))
     p_list.sort(key=lambda x: x.cognome)
     renderer = Renderer(os.path.join(basepath,'EtichetteA4Cac.odt'), {'p_list':p_list}, os.path.join(basepath, 'etichette.odt'))
@@ -144,16 +144,20 @@ def sendLetter(request, id):
         p = Persona.objects.get(pk=int(id))
     except Persona.DoesNotExist:
         return HttpResponseNotFound()
-    l = Lettera(persona=p, data=datetime.date.today(), status=False)
+    l = Lettera(persona=p, data=datetime.date.today(), data_invio=None)
     l.save()
     return HttpResponse(json2.encode({"totalCount": 1, 'root':l.__dict__}))
 
 def lettersSent(request):
-    for x in Lettera.objects.filter(status=False):
-        x.status=True
+    for x in Lettera.objects.filter(data_invio=None):
+        x.data_invio=datetime.date.today()
         x.save()
     return HttpResponse(json2.encode({"totalCount": 1, 'success':True}))
     
+def listLettersSent(request, id):
+    l_list = Lettera.objects.filter(persona__pk=id)
     
+    start = int(request.GET.get('start', 0))
+    limit = int(request.GET.get('limit', len(l_list)))
     
-             
+    return HttpResponse(json2.encode({"totalCount": len(l_list),"root": [x.__dict__ for x in l_list[start:start+limit]]}))
