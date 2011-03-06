@@ -130,7 +130,7 @@ def genEtichette(request):
     except OSError:
         pass
     letters = Lettera.objects.filter(data_invio=None)
-    p_list = list(set(x.persona for x in letters))
+    p_list = list(set(x.persona for x in letters if x.persona.indirizzo != ''))
     p_list.sort(key=lambda x: x.cognome)
     renderer = Renderer(os.path.join(basepath,'EtichetteA4Cac.odt'), {'p_list':p_list}, os.path.join(basepath, 'etichette.odt'))
     renderer.run()

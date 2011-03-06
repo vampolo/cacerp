@@ -1,6 +1,5 @@
 <uwsgi>
-    <pythonpath>./</pythonpath>
-    <pythonpath></pythonpath>
+    <pythonpath>/home/goshawk/Projects/cacerp/</pythonpath>
     <app mountpoint="/">
         <script>django_wsgi</script>
     </app>
